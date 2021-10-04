@@ -1,9 +1,25 @@
-#!/usr/bin/env python3
+#+TITLE: Edit videos based on background color and remove dead air
+
+* Background and Goals
+
+
+* Imports
+
+#+name: imports
+#+begin_src python
 import math
 import sys
 from typing import Tuple
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
+#+end_src
 
+
+* Color Edit
+** Get average RGB of part of the frame
+This is used to determine whether we're seeing a "green" or "red" frame.
+
+#+name: avg_rgb
+#+begin_src python
 # Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
 # Assumes x1 < x2, y1 < y2
 def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, float]:
@@ -18,6 +34,13 @@ def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, fl
     avg_g = g / total_pixels
     avg_b = b / total_pixels
     return avg_r, avg_g, avg_b
+#+end_src
+
+** Edit video based on color
+
+#+name: color_edit
+#+begin_src python :noweb yes
+<<avg_rgb>>
 
 # Look for colors in frame, edit based on that.
 # Returns list of (start, end) tuples of time intervals we want to keep.
@@ -61,6 +84,13 @@ def color_edit(video):
         keep_intervals.append([keep_start, keep_end])
 
     return keep_intervals
+#+end_src
+
+* Remove dead air
+Look for speaking parts, cut out the silent parts.
+
+#+name: find_speaking
+#+begin_src python
 # Iterate over audio to find the non-silent parts. Outputs a list of
 # (speaking_start, speaking_end) intervals.
 # Args:
@@ -99,7 +129,11 @@ def find_speaking(audio_clip, window_size=0.1, volume_threshold=0.05, ease_in=0.
                 speaking_intervals.append(new_speaking_interval)
 
     return speaking_intervals
+#+end_src
 
+* Main
+#+name: main
+#+begin_src python
 def main():
     # Parse args
     # Input file path
@@ -138,3 +172,18 @@ def main():
 
 if __name__ == '__main__':
     main()
+#+end_src
+
+
+* Final Assembly
+Put together all the above pieces, tangle them into a single Python source file that we can run.
+
+#+name: full_program
+#+begin_src python :tangle yes :noweb yes :shebang "#!/usr/bin/env python3"
+<<imports>>
+
+<<color_edit>>
+<<find_speaking>>
+
+<<main>>
+#+end_src

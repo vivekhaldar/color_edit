@@ -21,7 +21,7 @@ def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, fl
 
 # Look for colors in frame, edit based on that.
 # Returns list of (start, end) tuples of time intervals we want to keep.
-def color_edit(video):
+def color_edit_intervals(video):
     intervals_to_keep = []
     frame_marker = [] # 'c': content; 'y': keep prior interval; 'n': drop prior interval.
     # Iterate over every frame.
@@ -61,13 +61,21 @@ def color_edit(video):
         keep_intervals.append([keep_start, keep_end])
 
     return keep_intervals
+
+def color_edit(vid_file_clip):
+    print("---- Looking for color coded editing clips... -----")
+    intervals_to_keep = color_edit_intervals(vid_file_clip)
+    print("Keeping color edit intervals: " + str(intervals_to_keep))
+    keep_clips = [vid_file_clip.subclip(start, end) for [start, end] in intervals_to_keep]
+    color_edited_video = concatenate_videoclips(keep_clips)
+    return color_edited_video  
 # Iterate over audio to find the non-silent parts. Outputs a list of
 # (speaking_start, speaking_end) intervals.
 # Args:
 #  window_size: (in seconds) hunt for silence in windows of this size
 #  volume_threshold: volume below this threshold is considered to be silence
 #  ease_in: (in seconds) add this much silence around speaking intervals
-def find_speaking(audio_clip, window_size=0.1, volume_threshold=0.05, ease_in=0.1, audio_fps=44100):
+def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.05, ease_in=0.1, audio_fps=44100):
     # First, iterate over audio to find all silent windows.
     num_windows = math.floor(audio_clip.end/window_size)
     window_is_silent = []
@@ -100,6 +108,14 @@ def find_speaking(audio_clip, window_size=0.1, volume_threshold=0.05, ease_in=0.
 
     return speaking_intervals
 
+def find_speaking(input_clip, input_audio_fps):
+    print("\n\n\n----- Now cutting out dead air... -----")
+    speaking_intervals = find_speaking_intervals(input_clip.audio, audio_fps=input_audio_fps)
+    print("Keeping speaking intervals: " + str(speaking_intervals))
+    speaking_clips = [input_clip.subclip(start, end) for [start, end] in speaking_intervals]
+    final_video = concatenate_videoclips(speaking_clips)
+    return final_video  
+
 def main():
     # Parse args
     # Input file path
@@ -110,21 +126,13 @@ def main():
     vid = VideoFileClip(file_in)
 
     # Color edit.
-    print("---- Looking for color coded editing clips... -----")
-    intervals_to_keep = color_edit(vid)
-    print("Keeping color edit intervals: " + str(intervals_to_keep))
-    keep_clips = [vid.subclip(start, end) for [start, end] in intervals_to_keep]
-    color_edited_video = concatenate_videoclips(keep_clips)
+    color_edited_video = color_edit(vid)
 
     # Cut out dead air.
-    print("\n\n\n----- Now cutting out dead air... -----")
-    speaking_intervals = find_speaking(color_edited_video.audio, audio_fps=vid.audio.fps)
-    print("Keeping speaking intervals: " + str(speaking_intervals))
-    speaking_clips = [color_edited_video.subclip(start, end) for [start, end] in speaking_intervals]
-    final_video = concatenate_videoclips(speaking_clips)
+    no_dead_air_video = find_speaking(color_edited_video, vid.audio.fps)
 
     print("\n\n\n----- Writing out edited video... -----")
-    final_video.write_videofile(file_out,
+    no_dead_air_video.write_videofile(file_out,
         #fps=60,
         preset='ultrafast',
         codec='libx264',

@@ -153,10 +153,12 @@ def main():
         #fps=60,
         preset='ultrafast',
         codec='libx264',
+        #codec='h264_videotoolbox',
         temp_audiofile='temp-audio.m4a',
         remove_temp=True,
         audio_codec="aac",
-        threads=6
+        #threads=6,
+        ffmpeg_params = ['-threads', '8'],
     )
     vid.close()
     end=timer()

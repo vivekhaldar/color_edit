@@ -3,6 +3,8 @@ import math
 import sys
 from typing import Tuple
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
+from timeit import default_timer as timer
+from datetime import timedelta
 
 # Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
 # Assumes x1 < x2, y1 < y2
@@ -64,10 +66,17 @@ def color_edit_intervals(video):
 
 def color_edit(vid_file_clip):
     print("---- Looking for color coded editing clips... -----")
+
+    start = timer()
     intervals_to_keep = color_edit_intervals(vid_file_clip)
     print("Keeping color edit intervals: " + str(intervals_to_keep))
     keep_clips = [vid_file_clip.subclip(start, end) for [start, end] in intervals_to_keep]
     color_edited_video = concatenate_videoclips(keep_clips)
+    end = timer()
+
+    color_edit_time = timedelta(seconds=end-start)
+    print('Color edit time: ' + str(color_edit_time))
+
     return color_edited_video  
 # Iterate over audio to find the non-silent parts. Outputs a list of
 # (speaking_start, speaking_end) intervals.
@@ -110,10 +119,17 @@ def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.05, 
 
 def find_speaking(input_clip, input_audio_fps):
     print("\n\n\n----- Now cutting out dead air... -----")
+
+    start = timer()
     speaking_intervals = find_speaking_intervals(input_clip.audio, audio_fps=input_audio_fps)
     print("Keeping speaking intervals: " + str(speaking_intervals))
     speaking_clips = [input_clip.subclip(start, end) for [start, end] in speaking_intervals]
     final_video = concatenate_videoclips(speaking_clips)
+    end = timer()
+
+    speaking_detection_time = timedelta(seconds=end-start)
+    print('Speaking detection time: ' + str(speaking_detection_time))
+
     return final_video  
 
 def main():
@@ -132,6 +148,7 @@ def main():
     no_dead_air_video = find_speaking(color_edited_video, vid.audio.fps)
 
     print("\n\n\n----- Writing out edited video... -----")
+    start = timer()
     no_dead_air_video.write_videofile(file_out,
         #fps=60,
         preset='ultrafast',
@@ -141,8 +158,12 @@ def main():
         audio_codec="aac",
         threads=6
     )
-
     vid.close()
+    end=timer()
+
+    render_time = timedelta(seconds=end-start)
+    print('Render time: ' + str(render_time))
+
 
 if __name__ == '__main__':
     main()

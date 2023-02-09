@@ -29,7 +29,6 @@
       devShells = forAllSystems ({ pkgs }: {
         default =
           let
-            # Use Python 3.11
             python = pkgs.python311;
           in
           pkgs.mkShell {
@@ -39,8 +38,10 @@
               (python.withPackages (ps: with ps; [
                 virtualenv # Virtualenv
                 pip # The pip installer
-                poetry # will do poetry2nix later
+                # poetry-core
               ]))
+              # pkgs.python310Packages.poetry # will do poetry2nix later
+              pkgs.poetry
             ];
           };
       });

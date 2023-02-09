@@ -1,0 +1,3 @@
+To run:
+
+poetry run python3 color_edit.py <input video> <output video filename>

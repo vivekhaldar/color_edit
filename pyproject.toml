@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "color_edit"
+version = "0.1.0"
+description = "Automatically edit videos based on color screen markers."
+authors = ["Vivek Haldar"]
+license = "Mine"
+readme = "color_edit.org"
+packages = [{include = "color_edit"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+moviepy = "^1.0.3"
+
+[tool.poetry.scripts]
+color_edit = 'color_edit:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

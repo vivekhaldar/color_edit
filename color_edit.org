@@ -51,7 +51,7 @@ def color_edit_intervals(video):
     frame_marker = [] # 'c': content; 'y': keep prior interval; 'n': drop prior interval.
     # Iterate over every frame.
     for frame in video.iter_frames():
-        avg_r, avg_g, avg_b = avg_rgb(frame, 100, 100, 110, 110)
+        avg_r, avg_g, avg_b = avg_rgb(frame, 100, 900, 110, 910)
         is_red = (avg_r > 120) and (avg_g < 50) and (avg_b < 50)
         is_green = (avg_r < 80) and (avg_g > 120) and (avg_b < 50)
         marker = 'c'

@@ -1,11 +1,40 @@
 #!/usr/bin/env python3
 import math
 import sys
+import os
 from typing import Tuple
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
 from timeit import default_timer as timer
 from datetime import timedelta
+# Given a timestamp in seconds, convert to a string in the format HH:MM:SS:FF
+def seconds_to_ts(seconds, fps):
+  hours = math.floor(seconds / 3600)
+  minutes = math.floor((seconds - (hours * 3600)) / 60)
+  secs = math.floor(seconds - (hours * 3600) - (minutes * 60))
+  frames = math.floor((seconds - math.floor(seconds)) * fps)
+  return '{:02d}:{:02d}:{:02d}:{:02d}'.format(hours, minutes, secs, frames)
 
+# Export an EDL file given a list of (start, end) time intervals.
+def export_edl(intervals, clip_filename, edl_filename, fps):
+  print('Exporting EDL file: {}'.format(edl_filename))
+  with open(edl_filename, 'w') as f:
+    f.write('TITLE: Timeline 1\n')
+    f.write('FCM: NON-DROP FRAME\n')
+    timeline_seconds = 60 * 60  # Davinci timeline starts at 1 hr.
+    for i, interval in enumerate(intervals):
+      start = interval[0]
+      end = interval[1]
+      duration = end - start
+      timeline_start = timeline_seconds
+      timeline_end = timeline_seconds + duration
+      timeline_seconds = timeline_end
+      f.write('{:03d}  AX       V     C        {} {}  {}  {}\n'.format(
+        i + 1,
+        seconds_to_ts(start, fps),
+        seconds_to_ts(end, fps),
+        seconds_to_ts(timeline_start, fps),
+        seconds_to_ts(timeline_end, fps)))
+      f.write('* FROM CLIP NAME: {}\n'.format(clip_filename))
 # Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
 # Assumes x1 < x2, y1 < y2
 def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, float]:
@@ -77,7 +106,7 @@ def color_edit(vid_file_clip):
     color_edit_time = timedelta(seconds=end-start)
     print('Color edit time: ' + str(color_edit_time))
 
-    return color_edited_video  
+    return color_edited_video, intervals_to_keep
 # Iterate over audio to find the non-silent parts. Outputs a list of
 # (speaking_start, speaking_end) intervals.
 # Args:
@@ -130,7 +159,7 @@ def find_speaking(input_clip, input_audio_fps):
     speaking_detection_time = timedelta(seconds=end-start)
     print('Speaking detection time: ' + str(speaking_detection_time))
 
-    return final_video  
+    return final_video, speaking_intervals
 
 def main():
     # Parse args
@@ -142,10 +171,21 @@ def main():
     vid = VideoFileClip(file_in)
 
     # Color edit.
-    color_edited_video = color_edit(vid)
+    color_edited_video, color_intervals = color_edit(vid)
 
     # Cut out dead air.
-    no_dead_air_video = find_speaking(color_edited_video, vid.audio.fps)
+    no_dead_air_video, speaking_intervals = find_speaking(color_edited_video, vid.audio.fps)
+
+    # Write out EDL files with intervals.
+    clip_name = os.path.split(file_in)[-1]
+    clip_dir = os.path.dirname(file_in)
+    color_edl = os.path.join(clip_dir, clip_name + '.color.edl')
+    speaking_edl = os.path.join(clip_dir, clip_name + '.speaking.edl')
+    export_edl(color_intervals, clip_name, color_edl, fps=vid.fps)
+    # The below will not work, because it should be emitting timestamps relative
+    # to the color-edited video, but doesn't.
+    # export_edl(speaking_intervals, clip_name, speaking_edl)
+
 
     print("\n\n\n----- Writing out edited video... -----")
     start = timer()

@@ -12,7 +12,12 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install --user -r requirements.txt"
+	"postCreateCommand": "pip3 install --user -r requirements.txt",
+
+	// So I can access files in my homedir.	
+    "mounts": [
+        "source=${env:HOME},target=/mnt,type=bind"
+    ]
 
 	// Configure tool-specific properties.
 	// "customizations": {},

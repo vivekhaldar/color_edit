@@ -1,3 +1,6 @@
+# Ignore EDL files.
+*.edl
+
 # Ignore video files.
 *.mp4
 *.avi

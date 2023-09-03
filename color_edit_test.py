@@ -2,11 +2,12 @@
 # Don't want to check in the actual video, which would be huge.
 
 from moviepy.editor import *
+from moviepy.audio.AudioClip import AudioClip
 import numpy as np
 import os
 import unittest
 
-from color_edit import color_edit
+from color_edit import color_edit, find_speaking
 
 DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1080
@@ -130,6 +131,25 @@ class TestColorEdit(unittest.TestCase):
         os.remove(self.TEST_INPUT_FILE)
         os.remove(self.TEST_OUTPUT_FILE)
         os.remove(self.EXPECTED_OUTPUT_FILE)
+
+
+# Unit test for finding speaking intervals.
+class TestFindSpeaking(unittest.TestCase):
+    GOLDEN_INPUT_FILE = 'golden_input_with_silence_lores.mp4'
+    GOLDEN_OUTPUT_FILE = 'golden_output_nosilence_lores.mp4'
+    TEST_OUTPUT_FILE = 'test_find_speaking_output_video.mp4'
+
+    def test_find_speaking(self):
+        vid = VideoFileClip(self.GOLDEN_INPUT_FILE)
+        no_dead_air_video, speaking_intervals = find_speaking(vid, vid.audio.fps)
+        write_video_to_file(no_dead_air_video, self.TEST_OUTPUT_FILE)
+
+        # Compare the two video files approximately.
+        self.assertTrue(videos_approximately_same(self.GOLDEN_OUTPUT_FILE, self.TEST_OUTPUT_FILE))
+
+    def tearDown(self) -> None:
+        os.remove(self.TEST_OUTPUT_FILE)
+
 
 if __name__ == '__main__':
     unittest.main()

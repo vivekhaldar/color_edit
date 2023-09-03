@@ -85,9 +85,9 @@ def videos_approximately_same(video_file1, video_file2):
 # Unit test for color editing.
 # Note that this only tests color editing, not removing silence.
 class TestColorEdit(unittest.TestCase):
-    TEST_INPUT_FILE = 'test_input_video.mp4'
-    TEST_OUTPUT_FILE = 'test_output_video.mp4'
-    EXPECTED_OUTPUT_FILE = 'expected_output_video.mp4'
+    TEST_INPUT_FILE = 'test_color_edit_input_video.mp4'
+    TEST_OUTPUT_FILE = 'test_color_edit_output_video.mp4'
+    EXPECTED_OUTPUT_FILE = 'expected_color_edit_output_video.mp4'
 
     def _create_test_input_video(self):
         # Create a video with a sequence of colors.

@@ -135,8 +135,8 @@ class TestColorEdit(unittest.TestCase):
 
 # Unit test for finding speaking intervals.
 class TestFindSpeaking(unittest.TestCase):
-    GOLDEN_INPUT_FILE = 'golden_input_with_silence_lores.mp4'
-    GOLDEN_OUTPUT_FILE = 'golden_output_nosilence_lores.mp4'
+    GOLDEN_INPUT_FILE = 'golden/input_with_silence_lores.mp4'
+    GOLDEN_OUTPUT_FILE = 'golden/output_nosilence_lores.mp4'
     TEST_OUTPUT_FILE = 'test_find_speaking_output_video.mp4'
 
     def test_find_speaking(self):

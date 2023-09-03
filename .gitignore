@@ -1,6 +1,9 @@
 # Ignore EDL files.
 *.edl
 
+# Compiler python.
+*.pyc
+
 # Ignore video files.
 *.mp4
 *.avi

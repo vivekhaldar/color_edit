@@ -83,27 +83,37 @@ def videos_approximately_same(video_file1, video_file2):
     return True
 
 
-# Fixture to create the input and expected output videos
-@pytest.fixture
-def setup_test_data():
-    test_input_file = 'test_color_edit_input_video.mp4'
-    expected_output_file = 'expected_color_edit_output_video.mp4'
-
-    # Create a video with a sequence of colors.
-    test_color_sequence = [
-        (WHITE, 1),
-        (GREEN, 2),  # Keep WHITE, 1
-        (BLUE, 3),
-        (RED, 1),    # Drop BLUE, 3
-        (BLUE, 2),
-        (GREEN, 3),  # Keep BLUE, 2
-        (WHITE, 3)   # Keep WHITE, 3
-    ]
-    expected_color_sequence = [
-        (WHITE, 1),
-        (BLUE, 2),
-        (WHITE, 3)
-    ]
+# Fixture to create the input and expected output videos.
+# Parametrized over a list of test cases.
+@pytest.fixture(
+        params=[
+            ("keep_drop_keep_keepend",
+             [(WHITE, 1), (GREEN, 2), (BLUE, 3), (RED, 1), (BLUE, 2), (GREEN, 3), (WHITE, 3)],
+             [(WHITE, 1), (BLUE, 2), (WHITE, 3)]),
+            ("trivial_keep_no_markers",
+             [(BLUE, 3)], 
+             [(BLUE, 3)]),
+            ("trivial_keep_end_marker",
+             [(BLUE, 1), (GREEN, 1)], 
+             [(BLUE, 1)]),
+            # When a keep and drop marker are right next to each other, the later one takes precedence.
+            # "keep" followed immediately by "drop", drop takes precedence.
+            ("keep_drop_marker",
+             [(BLUE, 1), (GREEN, 1), (WHITE, 1), (GREEN, 1), (RED, 1)], 
+             [(BLUE, 1)]),
+            # FIXME: this test case exposes a bug.
+            # "drop" followed immediately by "keep", keep takes precedence.
+            ("drop_keep_marker",
+             [(BLUE, 1), (GREEN, 1), (WHITE, 1), (RED, 1), (GREEN, 1)], 
+             [(BLUE, 1), (WHITE, 1), (RED, 1), (GREEN, 1)]),
+            # Correct output:
+            # [(BLUE, 1), (WHITE, 1)]
+        ])  # Add more cases as needed
+def setup_test_data(request):
+    case_name, test_color_sequence, expected_color_sequence = request.param
+    
+    test_input_file = f'test_color_edit_input_video_{case_name}.mp4'
+    expected_output_file = f'expected_color_edit_output_video_{case_name}.mp4'
 
     test_input_video = generate_color_sequence_video(test_color_sequence)
     expected_output_video = generate_color_sequence_video(expected_color_sequence)
@@ -116,20 +126,21 @@ def setup_test_data():
     os.remove(test_input_file)
     os.remove(expected_output_file)
 
-# Test function
 def test_color_edit(setup_test_data):
     test_input_file, expected_output_file = setup_test_data
 
     vid = VideoFileClip(test_input_file)
     color_edited_video, color_intervals = color_edit(vid)
     
-    test_output_file = 'test_color_edit_output_video.mp4'
+    test_output_file = f'testgen_{test_input_file}.mp4'
     write_video_to_file(color_edited_video, test_output_file)
 
     # Compare the two video files approximately.
     assert videos_approximately_same(test_output_file, expected_output_file)
 
     os.remove(test_output_file)
+
+
 
 # Test find_speaking.
 GOLDEN_INPUT_FILE = 'golden/input_with_silence_lores.mp4'

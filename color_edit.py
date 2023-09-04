@@ -6,6 +6,8 @@ from typing import Tuple
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
 from timeit import default_timer as timer
 from datetime import timedelta
+
+
 # Given a timestamp in seconds, convert to a string in the format HH:MM:SS:FF
 def seconds_to_ts(seconds, fps):
   hours = math.floor(seconds / 3600)
@@ -13,6 +15,7 @@ def seconds_to_ts(seconds, fps):
   secs = math.floor(seconds - (hours * 3600) - (minutes * 60))
   frames = math.floor((seconds - math.floor(seconds)) * fps)
   return '{:02d}:{:02d}:{:02d}:{:02d}'.format(hours, minutes, secs, frames)
+
 
 # Export an EDL file given a list of (start, end) time intervals.
 def export_edl(intervals, clip_filename, edl_filename, fps):
@@ -35,6 +38,8 @@ def export_edl(intervals, clip_filename, edl_filename, fps):
         seconds_to_ts(timeline_start, fps),
         seconds_to_ts(timeline_end, fps)))
       f.write('* FROM CLIP NAME: {}\n'.format(clip_filename))
+
+
 # Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
 # Assumes x1 < x2, y1 < y2
 def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, float]:
@@ -49,6 +54,7 @@ def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, fl
     avg_g = g / total_pixels
     avg_b = b / total_pixels
     return avg_r, avg_g, avg_b
+
 
 # Look for colors in frame, edit based on that.
 # Returns list of (start, end) tuples of time intervals we want to keep.
@@ -93,6 +99,7 @@ def color_edit_intervals(video):
 
     return keep_intervals
 
+
 def color_edit(vid_file_clip):
     print("---- Looking for color coded editing clips... -----")
 
@@ -107,6 +114,8 @@ def color_edit(vid_file_clip):
     print('Color edit time: ' + str(color_edit_time))
 
     return color_edited_video, intervals_to_keep
+
+
 # Iterate over audio to find the non-silent parts. Outputs a list of
 # (speaking_start, speaking_end) intervals.
 # Args:
@@ -146,6 +155,7 @@ def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.01, 
 
     return speaking_intervals
 
+
 def find_speaking(input_clip, input_audio_fps):
     print("\n\n\n----- Now cutting out dead air... -----")
 
@@ -160,6 +170,7 @@ def find_speaking(input_clip, input_audio_fps):
     print('Speaking detection time: ' + str(speaking_detection_time))
 
     return final_video, speaking_intervals
+
 
 def main():
     # Parse args

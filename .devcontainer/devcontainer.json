@@ -15,6 +15,17 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "pip3 install --user -r requirements.txt",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.copilot",
+				"GitHub.copilot-labs",
+				"GitHub.copilot-chat",
+				"ms-python.vscode-pylance",
+				"ms-python.python"
+			]
+		}
+	},
 
 	// Configure tool-specific properties.
 	// "customizations": {},

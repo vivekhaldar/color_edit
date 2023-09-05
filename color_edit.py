@@ -6,6 +6,7 @@ from typing import Tuple
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
 from timeit import default_timer as timer
 from datetime import timedelta
+import numpy as np
 
 
 # Given a timestamp in seconds, convert to a string in the format HH:MM:SS:FF
@@ -39,20 +40,17 @@ def export_edl(intervals, clip_filename, edl_filename, fps):
         seconds_to_ts(timeline_end, fps)))
       f.write('* FROM CLIP NAME: {}\n'.format(clip_filename))
 
+# Note: concise rewrite of avg_rgb() using numpy suggested by ChatGPT (GPT-3.5)
+# https://chat.openai.com/share/9c4681a4-a5b9-4a50-bb59-2035947535c7
 
 # Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
 # Assumes x1 < x2, y1 < y2
 def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, float]:
-    r, g, b = 0, 0, 0
-    for x in range(x1, x2):
-        for y in range(y1, y2):
-            r += frame[x, y, 0]
-            g += frame[x, y, 1]
-            b += frame[x, y, 2]
+    region = frame[x1:x2, y1:y2, :]
     total_pixels = (x2 - x1) * (y2 - y1)
-    avg_r = r / total_pixels
-    avg_g = g / total_pixels
-    avg_b = b / total_pixels
+    avg_r = np.sum(region[:, :, 0]) / total_pixels
+    avg_g = np.sum(region[:, :, 1]) / total_pixels
+    avg_b = np.sum(region[:, :, 2]) / total_pixels
     return avg_r, avg_g, avg_b
 
 

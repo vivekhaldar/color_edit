@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import random
 import sys
 import os
 from typing import Tuple
@@ -40,19 +41,17 @@ def export_edl(intervals, clip_filename, edl_filename, fps):
         seconds_to_ts(timeline_end, fps)))
       f.write('* FROM CLIP NAME: {}\n'.format(clip_filename))
 
-# Note: concise rewrite of avg_rgb() using numpy suggested by ChatGPT (GPT-3.5)
-# https://chat.openai.com/share/9c4681a4-a5b9-4a50-bb59-2035947535c7
 
-# Get average RGB of part of a frame. Frame is H * W * 3 (rgb)
-# Assumes x1 < x2, y1 < y2
-def avg_rgb(frame, x1: int, y1: int, x2: int, y2: int) -> Tuple[float, float, float]:
-    region = frame[x1:x2, y1:y2, :]
-    total_pixels = (x2 - x1) * (y2 - y1)
-    avg_r = np.sum(region[:, :, 0]) / total_pixels
-    avg_g = np.sum(region[:, :, 1]) / total_pixels
-    avg_b = np.sum(region[:, :, 2]) / total_pixels
-    return avg_r, avg_g, avg_b
-
+# https://chat.openai.com/share/315085b3-d75a-41eb-85c4-57ecfd14fd94
+# Get average RGB of n random pixels in a frame.
+def sample_average_color(frame, n):
+    height, width, _ = frame.shape
+    random_coords = [(random.randint(0, height-1), random.randint(0, width-1)) for _ in range(n)]
+    
+    sampled_pixels = np.array([frame[y, x] for y, x in random_coords])
+    average_color = np.mean(sampled_pixels, axis=0)
+    
+    return average_color
 
 # Look for colors in frame, edit based on that.
 # Returns list of (start, end) tuples of time intervals we want to keep.
@@ -61,7 +60,7 @@ def color_edit_intervals(video):
     frame_marker = [] # 'c': content; 'y': keep prior interval; 'n': drop prior interval.
     # Iterate over every frame.
     for frame in video.iter_frames():
-        avg_r, avg_g, avg_b = avg_rgb(frame, 900, 500, 910, 510)
+        avg_r, avg_g, avg_b = sample_average_color(frame, 10)
         is_red = (avg_r > 120) and (avg_g < 50) and (avg_b < 50)
         is_green = (avg_r < 80) and (avg_g > 120) and (avg_b < 50)
         marker = 'c'

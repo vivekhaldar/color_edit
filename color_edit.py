@@ -55,51 +55,55 @@ def sample_average_color(frame, n):
     return average_color
 
 
+# The following refactor was suggested by ChatGPT (GPT-4)
+# https://chat.openai.com/share/53b0cbe4-c651-4cd8-904f-a938593f7662
+
 # Enum to label each frame. 'c': content; 'y': keep prior interval; 'n': drop prior interval.
 class FrameMarker(Enum):
     CONTENT = 1
     KEEP = 2
     DROP = 3
 
-# Look for colors in frame, edit based on that.
-# Returns list of (start, end) tuples of time intervals we want to keep.
 def color_edit_intervals(video):
-    intervals_to_keep = []
-    frame_marker = []
-    # Iterate over every frame.
-    for frame in video.iter_frames():
-        avg_r, avg_g, avg_b = sample_average_color(frame, 10)
-        is_red = (avg_r > 120) and (avg_g < 50) and (avg_b < 50)
-        is_green = (avg_r < 80) and (avg_g > 120) and (avg_b < 50)
-        marker = FrameMarker.CONTENT
-        if is_red:
-            marker = FrameMarker.DROP
-        elif is_green:
-            marker = FrameMarker.KEEP
-        frame_marker.append(marker)
+    frame_markers = [
+        get_frame_marker(sample_average_color(frame, 10)) 
+        for frame in video.iter_frames()
+    ]
 
-    keep_start, keep_end = 0, 0
+    return extract_intervals(frame_markers, video.fps)
+
+
+def get_frame_marker(avg_colors):
+    avg_r, avg_g, avg_b = avg_colors
+    is_red = avg_r > 120 and avg_g < 50 and avg_b < 50
+    is_green = avg_r < 80 and avg_g > 120 and avg_b < 50
+
+    if is_red:
+        return FrameMarker.DROP
+    elif is_green:
+        return FrameMarker.KEEP
+    else:
+        return FrameMarker.CONTENT
+
+
+def extract_intervals(frame_markers, fps):
     keep_intervals = []
-    start_of_last_green = 0
-    for i in range(1, len(frame_marker)):
-        m1 = frame_marker[i - 1]
-        m2 = frame_marker[i]
-        # Content followed by green, take note.
-        if m1 == FrameMarker.CONTENT and m2 == FrameMarker.KEEP:
+    start_of_last_green = keep_start = keep_end = 0
+
+    for i, (prev_marker, curr_marker) in enumerate(zip(frame_markers, frame_markers[1:])):
+        if prev_marker == FrameMarker.CONTENT and curr_marker == FrameMarker.KEEP:
             start_of_last_green = i
-        # Green followed by content. Keep previous interval. Start a (possible) new interval.
-        if m1 == FrameMarker.KEEP and m2 == FrameMarker.CONTENT:
-            keep_end = start_of_last_green / video.fps
+
+        if prev_marker == FrameMarker.KEEP and curr_marker == FrameMarker.CONTENT:
+            keep_end = start_of_last_green / fps
             keep_intervals.append([keep_start, keep_end])
-            keep_start = (i + 1) / video.fps
-        # Red followed by content. Drop the previous interval. Start a (possible) new interval.
-        if m1 == FrameMarker.DROP and m2 == FrameMarker.CONTENT:
-            keep_start = i / video.fps
-    
-    # Ending on green with no following content.
-    last_index = len(frame_marker) - 1
-    if frame_marker[last_index] == FrameMarker.CONTENT or frame_marker[last_index] == FrameMarker.KEEP:
-        keep_end = i / video.fps
+            keep_start = (i + 1) / fps
+
+        if prev_marker == FrameMarker.DROP and curr_marker == FrameMarker.CONTENT:
+            keep_start = i / fps
+
+    if frame_markers[-1] in {FrameMarker.CONTENT, FrameMarker.KEEP}:
+        keep_end = i / fps
         keep_intervals.append([keep_start, keep_end])
 
     return keep_intervals

@@ -4,6 +4,7 @@ import random
 import sys
 import os
 from typing import Tuple
+from enum import Enum
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
 from timeit import default_timer as timer
 from datetime import timedelta
@@ -53,21 +54,28 @@ def sample_average_color(frame, n):
     
     return average_color
 
+
+# Enum to label each frame. 'c': content; 'y': keep prior interval; 'n': drop prior interval.
+class FrameMarker(Enum):
+    CONTENT = 1
+    KEEP = 2
+    DROP = 3
+
 # Look for colors in frame, edit based on that.
 # Returns list of (start, end) tuples of time intervals we want to keep.
 def color_edit_intervals(video):
     intervals_to_keep = []
-    frame_marker = [] # 'c': content; 'y': keep prior interval; 'n': drop prior interval.
+    frame_marker = []
     # Iterate over every frame.
     for frame in video.iter_frames():
         avg_r, avg_g, avg_b = sample_average_color(frame, 10)
         is_red = (avg_r > 120) and (avg_g < 50) and (avg_b < 50)
         is_green = (avg_r < 80) and (avg_g > 120) and (avg_b < 50)
-        marker = 'c'
+        marker = FrameMarker.CONTENT
         if is_red:
-            marker = 'n'
+            marker = FrameMarker.DROP
         elif is_green:
-            marker = 'y'
+            marker = FrameMarker.KEEP
         frame_marker.append(marker)
 
     keep_start, keep_end = 0, 0
@@ -77,20 +85,20 @@ def color_edit_intervals(video):
         m1 = frame_marker[i - 1]
         m2 = frame_marker[i]
         # Content followed by green, take note.
-        if m1 == 'c' and m2 == 'y':
+        if m1 == FrameMarker.CONTENT and m2 == FrameMarker.KEEP:
             start_of_last_green = i
         # Green followed by content. Keep previous interval. Start a (possible) new interval.
-        if m1 == 'y' and m2 == 'c':
+        if m1 == FrameMarker.KEEP and m2 == FrameMarker.CONTENT:
             keep_end = start_of_last_green / video.fps
             keep_intervals.append([keep_start, keep_end])
             keep_start = (i + 1) / video.fps
         # Red followed by content. Drop the previous interval. Start a (possible) new interval.
-        if m1 == 'n' and m2 == 'c':
+        if m1 == FrameMarker.DROP and m2 == FrameMarker.CONTENT:
             keep_start = i / video.fps
     
     # Ending on green with no following content.
     last_index = len(frame_marker) - 1
-    if frame_marker[last_index] == 'c' or frame_marker[last_index] == 'y':
+    if frame_marker[last_index] == FrameMarker.CONTENT or frame_marker[last_index] == FrameMarker.KEEP:
         keep_end = i / video.fps
         keep_intervals.append([keep_start, keep_end])
 

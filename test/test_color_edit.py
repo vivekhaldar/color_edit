@@ -101,6 +101,12 @@ def videos_approximately_same(video_file1, video_file2):
             ("keep_drop_marker",
              [(BLUE, 1), (GREEN, 1), (WHITE, 1), (GREEN, 1), (RED, 1)], 
              [(BLUE, 1)]),
+            ("start_drop_marker",
+             [(BLUE, 1), (RED, 1), (WHITE, 1), (GREEN, 1)], 
+             [(WHITE, 1)]),
+            ("start_drop_marker2",
+             [(BLUE, 1), (RED, 1), (WHITE, 1), (GREEN, 1), (BLUE, 1), (RED, 1)], 
+             [(WHITE, 1)]),
             # FIXME: this test case exposes a bug.
             # "drop" followed immediately by "keep", keep takes precedence.
             ("drop_keep_marker",

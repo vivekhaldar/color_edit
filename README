@@ -1,3 +1,5 @@
-To run:
+Ways to run:
 
-poetry run python3 color_edit.py <input video> <output video filename>
+1. Run inside devcontainer. By the time container is up, all dependencies should be installed, and you can run the color_edit.py script from the command line.
+
+2. Locally, use "pip3 install --user -r requirements.txt" to install dependencies, then run.

@@ -114,6 +114,12 @@ def videos_approximately_same(video_file1, video_file2):
              [(BLUE, 1), (WHITE, 1), (RED, 1), (GREEN, 1)]),
             # Correct output:
             # [(BLUE, 1), (WHITE, 1)]
+            ("many_green_red",
+             [(GREEN, 0.2), (RED, 0.2), (GREEN, 0.1), (RED, 0.1), (WHITE, 1)], 
+             [(WHITE, 1)]),
+            ("many_green_red2",
+             [(RED, 0.2), (GREEN, 0.2), (RED, 0.1), (GREEN, 0.1), (WHITE, 1)], 
+             [(WHITE, 1)]),
         ])  # Add more cases as needed
 def setup_test_data(request):
     case_name, test_color_sequence, expected_color_sequence = request.param

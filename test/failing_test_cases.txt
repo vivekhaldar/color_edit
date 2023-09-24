@@ -1,0 +1,6 @@
+            ("start_drop_marker3",
+             [(BLUE, 1), (RED, 1), (WHITE, 1), (RED, 1), (BLUE, 1), (GREEN, 1)], 
+             [(RED, 1)]),
+            ("start_drop_marker4",
+             [(BLUE, 1), (RED, 1), (WHITE, 1), (RED, 1), (BLUE, 1), (GREEN, 1), (WHITE, 1)], 
+             [(GREEN, 1), (BLUE, 1)]),

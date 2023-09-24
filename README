@@ -1,3 +1,5 @@
-edit_normalize.sh takes in a video file and color-edits it and normalizes its volume.
+Ways to run:
 
-See devcontainer.json, which basically installs requirements.txt
+1. Run inside devcontainer. By the time container is up, all dependencies should be installed, and you can run the color_edit.py script from the command line.
+
+2. Locally, use "pip3 install --user -r requirements.txt" to install dependencies, then run.

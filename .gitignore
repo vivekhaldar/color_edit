@@ -3,3 +3,14 @@
 
 # Compiler python.
 *.pyc
+
+# Videos.
+*.mp4
+
+# Transcripts and EDLs.
+*.srt
+*.edl
+
+# Whisper models.
+*.pt
+

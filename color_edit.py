@@ -3,6 +3,7 @@ import math
 import random
 import sys
 import os
+import argparse
 from typing import Tuple
 from enum import Enum
 from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
@@ -181,11 +182,20 @@ def find_speaking(input_clip, input_audio_fps):
 
 
 def main():
-    # Parse args
+    # Create the parser
+    parser = argparse.ArgumentParser(description="Process a video file.")
+
+    # Add the arguments
+    parser.add_argument('--input', metavar='input', type=str, help='the path to the input file')
+    parser.add_argument('--output', metavar='output', type=str, help='the path to the output file')
+
+    # Parse the arguments
+    args = parser.parse_args()
+
     # Input file path
-    file_in = sys.argv[1]
+    file_in = args.input
     # Output file path
-    file_out = sys.argv[2]
+    file_out = args.output
 
     vid = VideoFileClip(file_in)
 

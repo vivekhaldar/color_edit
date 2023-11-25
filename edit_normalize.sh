@@ -8,7 +8,7 @@ input_file="$1"
 # Construct output file name
 output_file="${input_file%.*}.edited.${input_file##*.}"
 
-./color_edit.py $input_file $output_file
+./color_edit.py --input $input_file --output $output_file
 
 # Using ffmpeg command line, find the max volume in output file and store it in a variable.
 max_volume=$(ffmpeg -i $output_file -af "volumedetect"  -vn -sn -dn -f null /dev/null 2>&1 | grep "max_volume" | awk '{print $5}')

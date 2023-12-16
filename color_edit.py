@@ -135,7 +135,7 @@ def color_edit(vid_file_clip):
 #  window_size: (in seconds) hunt for silence in windows of this size
 #  volume_threshold: volume below this threshold is considered to be silence
 #  ease_in: (in seconds) add this much silence around speaking intervals
-def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.01, ease_in=0.1, audio_fps=44100):
+def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.005, ease_in=0.1, audio_fps=44100):
     num_windows = math.floor(audio_clip.end / window_size)
 
     # Find silent windows using list comprehension

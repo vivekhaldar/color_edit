@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Edit a video file and normalize the audio.
 
 # First argument is raw video file.

@@ -165,11 +165,11 @@ def find_speaking_intervals(audio_clip, window_size=0.1, volume_threshold=0.005,
     return speaking_intervals
 
 
-def find_speaking(input_clip, input_audio_fps):
+def find_speaking(input_clip, input_audio_fps, volume_threshold=0.005):
     print("\n\n\n----- Now cutting out dead air... -----")
 
     start = timer()
-    speaking_intervals = find_speaking_intervals(input_clip.audio, audio_fps=input_audio_fps)
+    speaking_intervals = find_speaking_intervals(input_clip.audio, volume_threshold=volume_threshold, audio_fps=input_audio_fps)
     print("Keeping speaking intervals: " + str(speaking_intervals))
     speaking_clips = [input_clip.subclip(start, end) for [start, end] in speaking_intervals]
     final_video = concatenate_videoclips(speaking_clips)
@@ -188,6 +188,7 @@ def main():
     # Add the arguments
     parser.add_argument('--input', metavar='input', type=str, help='the path to the input file')
     parser.add_argument('--output', metavar='output', type=str, help='the path to the output file')
+    parser.add_argument('--volume_threshold', metavar='volume_threshold', type=float, help='volume threshold for silence detection', default=0.005)
 
     # Parse the arguments
     args = parser.parse_args()
@@ -196,6 +197,8 @@ def main():
     file_in = args.input
     # Output file path
     file_out = args.output
+    # Volume threshold for silence detection
+    volume_threshold = args.volume_threshold
 
     vid = VideoFileClip(file_in)
 
@@ -203,7 +206,7 @@ def main():
     color_edited_video, color_intervals = color_edit(vid)
 
     # Cut out dead air.
-    no_dead_air_video, speaking_intervals = find_speaking(color_edited_video, vid.audio.fps)
+    no_dead_air_video, speaking_intervals = find_speaking(color_edited_video, vid.audio.fps, volume_threshold=volume_threshold)
 
     # Write out EDL files with intervals.
     clip_name = os.path.split(file_in)[-1]

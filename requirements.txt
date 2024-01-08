@@ -2,3 +2,6 @@ moviepy
 pytest
 # For transcription of audio.
 openai-whisper
+
+# Python formatter.
+black

@@ -221,6 +221,14 @@ def main():
         default=0.005,
     )
 
+    # Color edit.
+    parser.add_argument(
+        "--skip_color_edit",
+        action="store_true",
+        default=False,
+        help="skip color editing",
+    )
+
     # Parse the arguments
     args = parser.parse_args()
 
@@ -233,8 +241,14 @@ def main():
 
     vid = VideoFileClip(file_in)
 
-    # Color edit.
-    color_edited_video, color_intervals = color_edit(vid)
+    skip_color_edit = args.skip_color_edit
+
+    if not skip_color_edit:
+        color_edited_video, color_intervals = color_edit(vid)
+    else:
+        print("Skipping color editing...")
+        color_edited_video = vid
+        color_intervals = []
 
     # Cut out dead air.
     no_dead_air_video, speaking_intervals = find_speaking(

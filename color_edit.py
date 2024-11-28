@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import math
 import random
-import sys
 import os
 import argparse
-from typing import Tuple
 from enum import Enum
-from moviepy.editor import AudioClip, VideoFileClip, concatenate_videoclips
+from moviepy import VideoFileClip, concatenate_videoclips
 from timeit import default_timer as timer
 from datetime import timedelta
 import numpy as np
@@ -126,7 +124,7 @@ def color_edit(vid_file_clip):
     intervals_to_keep = color_edit_intervals(vid_file_clip)
     print("Keeping color edit intervals: " + str(intervals_to_keep))
     keep_clips = [
-        vid_file_clip.subclip(start, end) for [start, end] in intervals_to_keep
+        vid_file_clip.subclipped(start, end) for [start, end] in intervals_to_keep
     ]
     color_edited_video = concatenate_videoclips(keep_clips)
     end = timer()
@@ -154,8 +152,8 @@ def find_speaking_intervals(
 
     # Find silent windows using list comprehension
     window_is_silent = [
-        audio_clip.subclip(i * window_size, (i + 1) * window_size)
-        .set_fps(audio_fps)
+        audio_clip.subclipped(i * window_size, (i + 1) * window_size)
+        .with_fps(audio_fps)
         .max_volume()
         < volume_threshold
         for i in range(num_windows)
@@ -191,7 +189,7 @@ def find_speaking(input_clip, input_audio_fps, volume_threshold=0.005, window_si
     )
     print("Keeping speaking intervals: " + str(speaking_intervals))
     speaking_clips = [
-        input_clip.subclip(start, end) for [start, end] in speaking_intervals
+        input_clip.subclipped(start, end) for [start, end] in speaking_intervals
     ]
     final_video = concatenate_videoclips(speaking_clips)
     end = timer()

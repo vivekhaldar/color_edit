@@ -1,0 +1,21 @@
+[project]
+name = "color-edit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "moviepy>=2.1.1",
+    "pytest>=8.3.3",
+    "openai-whisper",    
+]
+
+
+
+[tool.uv.sources]
+openai-whisper = { git = "https://github.com/openai/whisper.git" }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+]

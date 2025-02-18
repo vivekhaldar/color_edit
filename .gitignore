@@ -7,6 +7,8 @@
 # Videos.
 *.mp4
 *.mkv
+*.webm
+*.png
 
 # Transcripts and EDLs.
 *.srt

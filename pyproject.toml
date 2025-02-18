@@ -10,8 +10,6 @@ dependencies = [
     "openai-whisper",    
 ]
 
-
-
 [tool.uv.sources]
 openai-whisper = { git = "https://github.com/openai/whisper.git" }
 
@@ -19,3 +17,9 @@ openai-whisper = { git = "https://github.com/openai/whisper.git" }
 dev = [
     "ruff>=0.8.0",
 ]
+
+[tool.uv]
+package = true
+
+[project.scripts]
+color_edit = "color_edit:main"

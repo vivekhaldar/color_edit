@@ -6,7 +6,7 @@ input_file="$1"
 # Check if there is a 2nd argument. If so, it is the volume threshold.
 
 # For desktop mic (FiFine)
-volume_threshold=0.005
+volume_threshold=0.002
 
 # For DJI Mic 2
 # volume_threshold=0.02
